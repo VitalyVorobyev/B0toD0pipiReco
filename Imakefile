@@ -1,0 +1,52 @@
+#
+# Imakefile
+#  
+
+TARGET  = b2d0pipi.so
+Objects  = b2d0pipi.o trkinfo.o ksinfo.o phiinfo.o etainfo.o dinfo.o pi0info.o d0info.o b0info.o uisetter.o geninfo.o ksfwmoments.o combinator.o recotools.o dataStructures.o kinefitter.o 
+
+CSourcesDir = ./src
+CIncludeDir = ./include
+CObjectsDir = ./obj
+
+Sources   = $(Objects:.o=.cc)
+#Incl      = $(Objects:.o=.h)
+SRCS      = $(addprefix $(CSourcesDir)/,$(Sources))
+OBJS      = $(addprefix $(CObjectsDir)/,$(Objects))
+#Includes  = $(addprefix $(CIncludeDir),$(Incl))
+
+BUILD_TOP_DIR    = $(BELLE_RUN_DIR)
+RELATIVE_TOP_DIR = $(BELLE_TOP_DIR)
+BELLE_INC_DIR    = $(BELLE_TOP_DIR)/include
+BBSTABLE         = $(BELLE_TOP_DIR)/src/config/panther/bbstable
+
+include $(BELLE_TOP_DIR)/src/config/Makefile.panther
+
+BELLE_LIB = -lcabs3 -lip -lkid -leid -lmdst -lparticle -lhelix -lbenergy -lhamlet -ltagv -lbelleCLHEP  -lip -lexkfitter
+PANTHER_LIB = -L$(BELLE_RUN_DIR)/lib/so -lpanther
+.SUFFIXES: .c .cc .so
+
+LIBS = -L. $(PANTHER_LIB) $(BELLE_LIB) $(EXTRA_LIB) `root-config --libs`\
+       -L$(MY_RUN_DIR)/lib/so -L$(BELLE_RUN_DIR)/lib -L$(CENR_ROOT)/lib -lip -L$(BELLE RUN DIR)/lib/so -lnisKsFinder 
+INCS = -I$(BELLE_INC_DIR) `root-config --cflags` -I$(NEUROBAYES)/include -I$(CIncludeDir)
+
+CC  = gcc
+CXX = g++
+OPT = -g
+CFLAGS   = $(OPT) -DHEP_SHORT_NAMES -DBELLE_SHORT_NAMES -DDSTXX_NOINLINE -fPIC
+CXXFLAGS = $(OPT) -DHEP_SHORT_NAMES -DBELLE_SHORT_NAMES -DDSTXX_NOINLINE -fPIC
+SOFLAGS  = $(OPT) -shared -Wl,-export-dynamic
+
+$(CObjectsDir)/%.o: $(CSourcesDir)/%.cc
+	$(CXX) -c $(CXXFLAGS) $(INCS) -o $@ $<
+
+#.c.o:
+#	$(CXX) -c $(CFLAGS) $(INCS) -o $@ $<
+
+# ------------------------------------------------------------------------
+
+all:: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(SOFLAGS) -o $@ $(OBJS) $(LIBS)
+
